@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 fn main() {
-    let protobuf_defs_path = std::env::var("PINNACLE_PROTOBUF_SNOWCAP_API_DEFS")
-        .unwrap_or_else("../api/protobuf".to_owned());
+    let protobuf_defs_path =
+        std::env::var("PINNACLE_PROTOBUF_SNOWCAP_API_DEFS").unwrap_or("../api/protobuf".to_owned());
     println!("cargo:rerun-if-changed={protobuf_defs_path}");
 
     let mut proto_paths = Vec::new();
