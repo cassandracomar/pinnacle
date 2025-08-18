@@ -1,6 +1,6 @@
 {pkgs, config, lib, ...}:
 let
-  cfg = config.programs.pinnacle;
+  cfg = config.wayland.windowManager.pinnacle;
   settingsFormat = pkgs.formats.toml {};
   systemdModule = {
     options = with lib.options; {
