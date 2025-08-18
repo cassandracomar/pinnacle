@@ -15,7 +15,7 @@
   };
 
   outputs = { nixpkgs, flake-utils, fenix, ... }:
-    flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system:
+    (flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system:
       let
         pkgs = import nixpkgs {
           inherit system;
@@ -40,14 +40,6 @@
 
         overlays.default = final: prev: {
           inherit (pkgs) pinnacle;
-        };
-
-        nixosModules = {
-          default = import ./nix/modules/nixos {};
-        };
-
-        hmModules = {
-          default = import ./nix/modules/home-manager {};
         };
 
         devShell = pkgs.mkShell {
@@ -95,5 +87,13 @@
           LD_LIBRARY_PATH =
             "${pkgs.wayland}/lib:${pkgs.libGL}/lib:${pkgs.libxkbcommon}/lib";
         };
-      });
+      })) // {
+        nixosModules = {
+          default = import ./nix/modules/nixos;
+        };
+
+        hmModules = {
+          default = import ./nix/modules/home-manager;
+        };
+      };
 }
