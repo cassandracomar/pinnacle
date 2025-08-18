@@ -102,7 +102,7 @@ in with lib.options; {
 
   config = let
     configFile = settingsFormat.generate "pinnacle.toml" cfg.mergedSettings;
-  in with lib; mkIf cfg.enable {
+  in lib.mkIf cfg.enable {
     xdg.configFile."pinnacle/pinnacle.toml" = {
       source = configFile;
       # TODO: make pinnacle reload config when this file changes without needing to restart the whole graphical session

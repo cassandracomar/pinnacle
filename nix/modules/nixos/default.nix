@@ -14,11 +14,11 @@ in with lib.options; {
     withUWSM = mkEnableOption "uwsm";
   };
 
-  config = mkIf cfg.enable (lib.mkMerge [
+  config = lib.mkIf cfg.enable (lib.mkMerge [
     {
       environment.systemPackages = [cfg.package];
       services.dbus.enable = true;
-      xdg.portal = mkIf cfg.xdg-portals.enable {
+      xdg.portal = lib.mkIf cfg.xdg-portals.enable {
         enable = true;
         wlr.enable = true;
         extraPortals = [
