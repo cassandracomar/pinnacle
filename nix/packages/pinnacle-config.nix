@@ -25,7 +25,7 @@ rustPlatform.buildRustPackage ((builtins.removeAttrs args ["cargoLock" "nativeBu
   ];
 
   cargoLock = {
-    lockFile = src + ./Cargo.lock;
+    lockFile = src + "/Cargo.lock";
     allowBuiltinFetchGit = true;
   } // (args.cargoLock or {});
 })
