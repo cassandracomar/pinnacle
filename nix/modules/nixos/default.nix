@@ -28,9 +28,12 @@ in with lib.options; {
       };
     }
     (let
+      # make sure we launch the version of pinnacle for the current running
+      # generation rather than some other version for a future or past
+      # generation.
       pinnacle-session = pkgs.writeShellScript "pinnacle-session" ''
         #!${pkgs.runtimeShell}
-        exec ${cfg.package}/bin/pinnacle --session
+        exec /run/current-system/sw/bin/pinnacle --session
       '';
     in lib.mkIf (cfg.withUWSM) {
       programs.uwsm.enable = true;
