@@ -38,10 +38,6 @@
           default = pkgs.pinnacle;
         };
 
-        overlays.default = final: prev: {
-          inherit (pkgs) pinnacle;
-        };
-
         devShell = pkgs.mkShell {
           nativeBuildInputs = [ pkgs.pkg-config ];
           buildInputs = with pkgs; [
@@ -88,6 +84,10 @@
             "${pkgs.wayland}/lib:${pkgs.libGL}/lib:${pkgs.libxkbcommon}/lib";
         };
       })) // {
+        overlays.default = final: prev: {
+          inherit (pkgs) pinnacle;
+        };
+
         nixosModules = {
           default = import ./nix/modules/nixos;
         };
