@@ -119,10 +119,10 @@ in with lib.options; {
         Description = "A Wayland compositor inspired by AwesomeWM";
         BindsTo = ["graphical-session.target"];
         Wants = ["graphical-session-pre.target"]
-                ++ optional cfg.systemd.xdgAutostart ["xdg-desktop-autostart.target"];
+                ++ lib.optionals cfg.systemd.xdgAutostart ["xdg-desktop-autostart.target"];
         After = ["graphical-session-pre.target"];
         Before = ["graphical-session.target"]
-                 ++ optional cfg.systemd.xdgAutostart ["xdg-desktop-autostart.target"];
+                 ++ lib.optionals cfg.systemd.xdgAutostart ["xdg-desktop-autostart.target"];
       };
       Service = {
         Slice = ["session.slice"];
