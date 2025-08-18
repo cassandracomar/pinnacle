@@ -17,21 +17,37 @@
   outputs = { nixpkgs, flake-utils, fenix, ... }:
     flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [(final: prev: {
+            pinnacle = prev.callPackage ./nix/packages/default.nix {};
+          })];
+        };
         fenixPkgs = fenix.packages.${system};
         toolchain = fenixPkgs.stable;
         combinedToolchain = toolchain.completeToolchain;
-        pinnacle-server = pkgs.callPackage ./nix/packages/pinnacle-server.nix {};
-        buildPinnacleConfig = pkgs.callPackage ./nix/packages/pinnacle-config.nix {};
       in {
         formatter = pkgs.nixfmt;
 
         lib = {
-          inherit buildPinnacleConfig;
+          inherit (pkgs.pinnacle) buildRustConfig;
         };
 
         packages = {
-          inherit pinnacle-server;
+          inherit (pkgs) pinnacle;
+          default = pkgs.pinnacle;
+        };
+
+        overlays = final: prev: {
+          inherit (pkgs) pinnacle;
+        };
+
+        nixosModules = {
+          default = import ./nix/modules/nixos {};
+        };
+
+        hmModules = {
+          default = import ./nix/modules/home-manager {};
         };
 
         devShell = pkgs.mkShell {

@@ -21,6 +21,7 @@
   rustc,
   cargo,
   makeWrapper,
+  callPackage,
 }: let
   lua = lua5_4.withPackages (ps: [lua54Packages.luarocks]);
   pinnacle = ../..;
@@ -28,12 +29,18 @@
     #!/bin/sh
     ${wlcs}/libexec/wlcs/wlcs "$@"
   '';
+  buildRustConfig = callPackage ./pinnacle-config.nix {};
 in rustPlatform.buildRustPackage {
+
   pname = "pinnacle-server";
   version = "0.1.0";
   src = pinnacle;
   cargoLock = {
     lockFile = "${pinnacle}/Cargo.lock";
+    # as we're not in-tree in nixpkgs right now, we don't benefit from the public nix subsituters.
+    # consequently, we can neither provide a single static `cargoHash` nor a set of hashes for just
+    # the dependencies fetched via git (these can change since cargo doesn't pin the git revision).
+    # so we're stuck doing this until we can upstream the package.
     allowBuiltinFetchGit = true;
   };
 
@@ -84,12 +91,26 @@ in rustPlatform.buildRustPackage {
 
   postInstall = ''
     wrapProgram $out/bin/pinnacle --prefix PATH ":" ${lib.makeBinPath [rustc cargo lua wlcs-script]}
+    install -m755 ${../../resources/pinnacle-session} $out/bin/pinnacle-session
+    mkdir -p $out/share/wayland-sessions
+    install -m644 ${../../resources/pinnacle.desktop} $out/share/wayland-sessions/pinnacle.desktop
+    patchShebangs $out/bin/pinnacle-session
   '';
+
+  # TODO: unsure if this is supposed to be provided via meta or as part of the main attrs
+  passthru = {
+    inherit buildRustConfig;
+    providedSessions = ["pinnacle"];
+  };
 
   meta = {
     description = "A WIP Smithay-based Wayland compositor, inspired by AwesomeWM and configured in Lua or Rust";
     homepage = "https://pinnacle-comp.github.io/pinnacle/";
     license = lib.licenses.gpl3;
     maintainers = ["pinnacle-comp"];
+    passthru = {
+      inherit buildRustConfig;
+      providedSessions = ["pinnacle"];
+    };
   };
 }
