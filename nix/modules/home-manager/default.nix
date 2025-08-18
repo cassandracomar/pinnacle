@@ -5,16 +5,16 @@ let
 in with lib.options; {
   options.wayland.windowManager.pinnacle = {
     enable = mkEnableOption "pinnacle";
+    package = mkPackageOption pkgs "pinnacle-config" {
+      default = "pinnacle-config";
+      example = "pkgs.pinnacle-config";
+      extraDescription = "package containing the command/script to run as the pinnacle user configuration.";
+    };
     config = {
-      package = mkPackageOption pkgs "pinnacle-config" {
-        default = "pinnacle-config";
-        example = "pkgs.pinnacle-config";
-        extraDescription = "package containing the command/script to run as the pinnacle user configuration.";
-      };
 
       execCmd = mkOption {
         type = lib.types.listOf (lib.types.oneOf (with lib.types; [string path]));
-        default = ["${cfg.config.package}/bin/pinnacle-config"];
+        default = ["${cfg.package}/bin/pinnacle-config"];
         example = ''["''${pkgs.pinnacle-config}/bin/pinnacle-config"]'';
         # TODO: figure out how to package and run lua configuration scripts
         description = ''
