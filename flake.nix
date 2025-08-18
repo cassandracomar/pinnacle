@@ -20,8 +20,18 @@
         fenixPkgs = fenix.packages.${system};
         toolchain = fenixPkgs.stable;
         combinedToolchain = toolchain.completeToolchain;
+        pinnacle-server = pkgs.callPackage ./nix/packages/pinnacle-server.nix {};
+        buildPinnacleConfig = pkgs.callPackage ./nix/packages/pinnacle-config.nix {};
       in {
         formatter = pkgs.nixfmt;
+
+        lib = {
+          inherit buildPinnacleConfig;
+        };
+
+        packages = {
+          inherit pinnacle-server;
+        };
 
         devShell = pkgs.mkShell {
           nativeBuildInputs = [ pkgs.pkg-config ];
