@@ -22,15 +22,19 @@
   cargo,
   makeWrapper,
   callPackage,
-}: let
-  lua = lua5_4.withPackages (ps: [lua54Packages.luarocks]);
+  libglvnd,
+  autoPatchelfHook,
+}:
+let
+  lua = lua5_4.withPackages (ps: [ lua54Packages.luarocks ]);
   pinnacle = ../..;
   wlcs-script = writeScriptBin "wlcs" ''
     #!/bin/sh
     ${wlcs}/libexec/wlcs/wlcs "$@"
   '';
-  buildRustConfig = callPackage ./pinnacle-config.nix {};
-in rustPlatform.buildRustPackage {
+  buildRustConfig = callPackage ./pinnacle-config.nix { };
+in
+rustPlatform.buildRustPackage {
 
   pname = "pinnacle-server";
   version = "0.1.0";
@@ -44,7 +48,7 @@ in rustPlatform.buildRustPackage {
     allowBuiltinFetchGit = true;
   };
 
-  buildFeatures = ["wlcs"];
+  buildFeatures = [ "wlcs" ];
 
   buildInputs = [
     wayland
@@ -77,10 +81,11 @@ in rustPlatform.buildRustPackage {
     wayland
     wlcs-script
     makeWrapper
+    autoPatchelfHook
   ];
 
   # integration tests don't work inside the nix sandbox, I think because the wayland socket is inaccessible.
-  cargoTestFlags = ["--lib"];
+  cargoTestFlags = [ "--lib" ];
   # the below is necessary to actually execute the integration tests
   # TODO:
   #   1. figure out if it's possible to run the integration tests inside the nix sandbox
@@ -90,27 +95,40 @@ in rustPlatform.buildRustPackage {
   # '';
 
   postInstall = ''
-    wrapProgram $out/bin/pinnacle --prefix PATH ":" ${lib.makeBinPath [rustc cargo lua wlcs-script]}
+    wrapProgram $out/bin/pinnacle --prefix PATH ":" ${
+      lib.makeBinPath [
+        rustc
+        cargo
+        lua
+        wlcs-script
+      ]
+    }
     install -m755 ${../../resources/pinnacle-session} $out/bin/pinnacle-session
     mkdir -p $out/share/wayland-sessions
     install -m644 ${../../resources/pinnacle.desktop} $out/share/wayland-sessions/pinnacle.desktop
     patchShebangs $out/bin/pinnacle-session
   '';
 
+  runtimeDependencies = [
+    wayland
+    mesa
+    libglvnd # libEGL
+  ];
+
   # TODO: unsure if this is supposed to be provided via meta or as part of the main attrs
   passthru = {
     inherit buildRustConfig;
-    providedSessions = ["pinnacle"];
+    providedSessions = [ "pinnacle" ];
   };
 
   meta = {
     description = "A WIP Smithay-based Wayland compositor, inspired by AwesomeWM and configured in Lua or Rust";
     homepage = "https://pinnacle-comp.github.io/pinnacle/";
     license = lib.licenses.gpl3;
-    maintainers = ["pinnacle-comp"];
+    maintainers = [ "pinnacle-comp" ];
     passthru = {
       inherit buildRustConfig;
-      providedSessions = ["pinnacle"];
+      providedSessions = [ "pinnacle" ];
     };
   };
 }
