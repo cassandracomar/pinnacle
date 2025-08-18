@@ -18,10 +18,8 @@ in with lib.options; {
       extraPortals = [
         pkgs.xdg-desktop-portal-wlr
         pkgs.xdg-desktop-portal-gtk
+        pkgs.gnome-keyring
       ];
     };
-
-    programs.dconf.enable = true;
-    security.polkit.enable = true;
   };
 }
