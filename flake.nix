@@ -3,7 +3,7 @@
     "A WIP Smithay-based Wayland compositor, inspired by AwesomeWM and configured in Lua or Rust";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
 
     fenix = {
       url = "github:nix-community/fenix";
