@@ -32,7 +32,7 @@ in with lib.options; {
     config = {
 
       execCmd = mkOption {
-        type = lib.types.listOf (lib.types.oneOf (with lib.types; [string path]));
+        type = lib.types.listOf (lib.types.oneOf (with lib.types; [str path]));
         default = ["${cfg.package}/bin/pinnacle-config"];
         example = ''["''${pkgs.pinnacle-config}/bin/pinnacle-config"]'';
         # TODO: figure out how to package and run lua configuration scripts
