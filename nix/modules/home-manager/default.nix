@@ -75,7 +75,7 @@ in with lib.options; {
     };
 
     extraSettings = mkOption {
-      type = lib.types.attrset;
+      type = lib.types.attrs;
 
       default = {};
 
