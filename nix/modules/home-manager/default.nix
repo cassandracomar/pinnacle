@@ -71,7 +71,7 @@ in with lib.options; {
     };
 
     systemd = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.submodule systemdModule);
+      type = lib.types.submodule systemdModule;
     };
 
     extraSettings = mkOption {
