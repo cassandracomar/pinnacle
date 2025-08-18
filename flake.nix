@@ -85,7 +85,7 @@
         };
       })) // {
         overlays.default = final: prev: {
-          inherit (pkgs) pinnacle;
+	  pinnacle = prev.callPackage ./nix/packages/default.nix {};
         };
 
         nixosModules = {
