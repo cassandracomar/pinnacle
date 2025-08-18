@@ -10,6 +10,7 @@ in with lib.options; {
       extraDescription = "package containing the pinnacle server binary";
     };
     xdg-portals.enable = mkEnableOption "xdg-desktop-portal";
+    # if you enable this, make sure to disable the systemd option in the home-manager module
     withUWSM = mkEnableOption "uwsm";
   };
 

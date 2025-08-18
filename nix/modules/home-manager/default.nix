@@ -60,6 +60,13 @@ in with lib.options; {
           create and enable the systemd user service to manage pinnacle. not enabling this option means you will need to create the user service/shutdown target yourself.
         '';
       };
+      useService = mkOption {
+        default = true;
+        example = true;
+        type = lib.types.bool;
+        description = "use a systemd service rather than a target -- needed for the provided pinnacle-session command but not necessary if using UWSM to manage the pinnacle session.";
+      };
+      xdgAutostart = mkEnableOption "autostart xdg applications";
     };
 
     extraSettings = mkOption {
@@ -102,7 +109,7 @@ in with lib.options; {
       # example: https://github.com/nix-community/home-manager/blob/2b73c2fcca690b6eca4f520179e54ae760f25d4e/modules/services/window-managers/i3-sway/sway.nix#L726
     };
 
-    systemd.user.services.pinnacle = lib.mkIf cfg.systemd.enable {
+    systemd.user.services.pinnacle = lib.mkIf (cfg.systemd.enable && cfg.systemd.useService) {
       Unit = {
         Description = "A Wayland compositor inspired by AwesomeWM";
         BindsTo = ["graphical-session.target"];
@@ -119,7 +126,7 @@ in with lib.options; {
       };
     };
 
-    systemd.user.targets.pinnacle-shutdown = lib.mkIf cfg.systemd.enable {
+    systemd.user.targets.pinnacle-shutdown = lib.mkIf (cfg.systemd.enable && cfg.systemd.useService) {
       Unit = {
         Description = "Shutdown running Pinnacle session";
         DefaultDependencies = false;
@@ -127,6 +134,19 @@ in with lib.options; {
 
         Conflicts = ["graphical-session.target" "graphical-session-pre.target"];
         After = ["graphical-session.target" "graphical-session-pre.target"];
+      };
+    };
+
+    systemd.user.targets.pinnacle-session = lib.mkIf (cfg.systemd.enable && !cfg.systemd.useService) {
+      Unit = {
+        Description = "Pinnacle compositor session";
+        Documentation = [ "man:systemd.special(7)" ];
+        BindsTo = [ "graphical-session.target" ];
+        Wants = [
+          "graphical-session-pre.target"
+        ] ++ lib.optionals cfg.systemd.xdgAutostart "xdg-desktop-autostart.target";
+        After = [ "graphical-session-pre.target" ];
+        Before = lib.optionals cfg.systemd.xdgAutostart "xdg-desktop-autostart.target";
       };
     };
   };
