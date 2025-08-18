@@ -38,7 +38,7 @@
           default = pkgs.pinnacle;
         };
 
-        overlays = final: prev: {
+        overlays.default = final: prev: {
           inherit (pkgs) pinnacle;
         };
 
