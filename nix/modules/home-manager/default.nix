@@ -2,6 +2,25 @@
 let
   cfg = config.programs.pinnacle;
   settingsFormat = pkgs.formats.toml {};
+  systemdModule = {
+    options = with lib.options; {
+      enable = mkOption {
+        default = true;
+        example = true;
+        type = lib.types.bool;
+        description = ''
+          create and enable the systemd user service to manage pinnacle. not enabling this option means you will need to create the user service/shutdown target yourself.
+        '';
+      };
+      useService = mkOption {
+        default = true;
+        example = true;
+        type = lib.types.bool;
+        description = "use a systemd service rather than a target -- needed for the provided pinnacle-session command but not necessary if using UWSM to manage the pinnacle session.";
+      };
+      xdgAutostart = mkEnableOption "autostart xdg applications";
+    };
+  };
 in with lib.options; {
   options.wayland.windowManager.pinnacle = {
     enable = mkEnableOption "pinnacle";
@@ -51,22 +70,8 @@ in with lib.options; {
       };
     };
 
-    systemd = {
-      enable = mkOption {
-        default = true;
-        example = true;
-        type = lib.types.bool;
-        description = ''
-          create and enable the systemd user service to manage pinnacle. not enabling this option means you will need to create the user service/shutdown target yourself.
-        '';
-      };
-      useService = mkOption {
-        default = true;
-        example = true;
-        type = lib.types.bool;
-        description = "use a systemd service rather than a target -- needed for the provided pinnacle-session command but not necessary if using UWSM to manage the pinnacle session.";
-      };
-      xdgAutostart = mkEnableOption "autostart xdg applications";
+    systemd = lib.mkOption {
+      type = lib.types.attrsOf (lib.types.submodule systemdModule);
     };
 
     extraSettings = mkOption {
