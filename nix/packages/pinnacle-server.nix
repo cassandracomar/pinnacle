@@ -20,9 +20,14 @@
   wlcs,
   rustc,
   cargo,
+  makeWrapper,
 }: let
   lua = lua5_4.withPackages (ps: [lua54Packages.luarocks]);
   pinnacle = ../..;
+  wlcs-script = writeScriptBin "wlcs" ''
+    #!/bin/sh
+    ${wlcs}/libexec/wlcs/wlcs "$@"
+  '';
 in rustPlatform.buildRustPackage {
   pname = "pinnacle-server";
   version = "0.1.0";
@@ -63,10 +68,8 @@ in rustPlatform.buildRustPackage {
     lua5_4
     git
     wayland
-    (writeScriptBin "wlcs" ''
-        #!/bin/sh
-        ${wlcs}/libexec/wlcs/wlcs "$@"
-      '')
+    wlcs-script
+    makeWrapper
   ];
 
   # integration tests don't work inside the nix sandbox, I think because the wayland socket is inaccessible.
@@ -80,13 +83,13 @@ in rustPlatform.buildRustPackage {
   # '';
 
   postInstall = ''
-    wrapProgram $out/bin/pinnacle --prefix PATH ":" ${lib.makeBinPath [rustc cargo lua]}
+    wrapProgram $out/bin/pinnacle --prefix PATH ":" ${lib.makeBinPath [rustc cargo lua wlcs-script]}
   '';
 
   meta = {
     description = "A WIP Smithay-based Wayland compositor, inspired by AwesomeWM and configured in Lua or Rust";
     homepage = "https://pinnacle-comp.github.io/pinnacle/";
     license = lib.licenses.gpl3;
-    maintainers = ["cassandracomar"];
+    maintainers = ["pinnacle-comp"];
   };
 }
