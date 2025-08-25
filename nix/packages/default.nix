@@ -43,23 +43,32 @@ let
     maintainers = [ "pinnacle-comp" ];
   };
   version = "0.1.0";
+
+  lua-grpc-protobufs = rustPlatform.buildRustPackage {
+    inherit meta version;
+    pname = "pinnacle-lua-build";
+    src = ../..;
+    cargoFlags = ["-p" "lua-build"];
+    runtimeDependencies = with lua54Packages; [lua-protobuf cqueues http];
+  };
+
   # we need a newer version of luaposix than what's in nixpkgs
   luaposix = lua54Packages.luaposix.overrideAttrs (old: rec {
-      version = "36.3.0-1";
-      knownRockspec =
-        (fetchurl {
-          url = "mirror://luarocks/luaposix-36.3-1.rockspec";
-          sha256 = "sha256-6/sAsOWrrXjdzPlAp/Z5FetQfzrkrf6TmOz3FZaBiks=";
-        }).outPath;
-      src = fetchzip {
-        url = "http://github.com/luaposix/luaposix/archive/v36.3.zip";
-        sha256 = "sha256-RKDH1sB7r7xDqueByWwps5fBfl5GBL9L86FjzfStBUw=";
-      };
+    version = "36.3.0-1";
+    knownRockspec =
+      (fetchurl {
+        url = "mirror://luarocks/luaposix-36.3-1.rockspec";
+        sha256 = "sha256-6/sAsOWrrXjdzPlAp/Z5FetQfzrkrf6TmOz3FZaBiks=";
+      }).outPath;
+    src = fetchzip {
+      url = "http://github.com/luaposix/luaposix/archive/v36.3.zip";
+      sha256 = "sha256-RKDH1sB7r7xDqueByWwps5fBfl5GBL9L86FjzfStBUw=";
+    };
 
-      disabled = lua54Packages.luaOlder "5.1" || lua54Packages.luaAtLeast "5.5";
-      propagatedBuildInputs = with lua54Packages; [ bit32 std-normalize libxcrypt pkg-config ];
-      meta.broken = disabled;
-    });
+    disabled = lua54Packages.luaOlder "5.1" || lua54Packages.luaAtLeast "5.5";
+    propagatedBuildInputs = with lua54Packages; [ bit32 std-normalize libxcrypt pkg-config ];
+    meta.broken = disabled;
+  });
 
   lua-client-api = lua54Packages.buildLuarocksPackage rec {
     inherit meta version;
@@ -72,6 +81,13 @@ let
     sourceRoot = "${src.name}/api/lua";
     knownRockspec = ../../api/lua/rockspecs/pinnacle-api-0.1.0-1.rockspec;
     propagatedBuildInputs = with lua54Packages; [cqueues http lua-protobuf compat53 luaposix];
+
+    postInstall = ''
+      mkdir -p $out/share/pinnacle
+      cp -rL --no-preserve ownership,mode ${../..}/api/protobuf $out/share/pinnacle/
+      mkdir -p $out/share/pinnacle
+      cp -rL --no-preserve ownership,mode ${../..}/snowcap/api/protobuf $out/share/pinnacle/
+    '';
   };
   buildLuaConfig = args: callPackage ./pinnacle-lua-config (args // { inherit lua-client-api; });
   lua = lua5_4.withPackages (ps: [ lua-client-api ]);

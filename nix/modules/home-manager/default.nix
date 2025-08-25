@@ -123,6 +123,14 @@ in with lib.options; {
       '';
     };
 
+    xdg.dataFile."pinnacle/protobuf" = {
+      source = "${cfg.package.lua-client-api}/share/pinnacle/protobuf";
+      recursive = true;
+      onChange = ''
+        ${cfg.package}/bin/pinnacle client -e "Pinnacle.reload_config()"
+      '';
+    };
+
     systemd.user.services.pinnacle = lib.mkIf (cfg.systemd.enable && cfg.systemd.useService) {
       Unit = {
         Description = "A Wayland compositor inspired by AwesomeWM";
