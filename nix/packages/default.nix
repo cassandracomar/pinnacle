@@ -41,13 +41,14 @@ let
   };
   version = "0.1.0";
 
-  luaClient = lua54Packages.buildLuarocksPackage {
+  lua-client-api = lua54Packages.buildLuarocksPackage {
     inherit meta version;
-    pname = "pinnacle";
+    pname = "pinnacle-client-api";
     src = ../../api/lua;
     propagatedBuildInputs = [lua5_4];
   };
-  lua = lua5_4.withPackages (ps: [ ps.luarocks luaClient]);
+  buildLuaConfig = args: callPackage ./pinnacle-lua-config (args // { inherit lua-client-api; });
+  lua = lua5_4.withPackages (ps: [ ps.luarocks lua-client-api]);
 in
 rustPlatform.buildRustPackage {
   inherit meta version;
@@ -92,6 +93,7 @@ rustPlatform.buildRustPackage {
     protobuf
     lua54Packages.luarocks
     lua5_4
+    lua-client-api
     git
     wayland
     wlcs-script
@@ -134,7 +136,8 @@ rustPlatform.buildRustPackage {
   ];
 
   passthru = {
-    inherit buildRustConfig;
+    inherit buildRustConfig buildLuaConfig;
     providedSessions = [ "pinnacle" ];
+    lua-client-api = lua-client-api;
   };
 }
