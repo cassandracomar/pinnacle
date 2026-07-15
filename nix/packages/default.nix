@@ -59,6 +59,11 @@ let
       luaposix
     ];
 
+    postConfigure = ''
+      substituteInPlace "$rockspecFilename" \
+        --replace-fail '"compat53 ~> 0.14"' '"compat53 >= 0.13, < 0.16,"'
+    '';
+
     postInstall = ''
       mkdir -p $out/share/pinnacle/protobuf/pinnacle
       cp -rL --no-preserve ownership,mode ../../api/protobuf/pinnacle $out/share/pinnacle/protobuf
