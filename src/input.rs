@@ -740,14 +740,15 @@ impl State {
             Point<f64, Logical>,
             Option<RegionAttributes>,
         )> = None;
+        let mut pointer_locked_to: Option<Option<Point<f64, Logical>>> = None;
 
         let current_contents = &self.pinnacle.pointer_contents;
+
+        let mut new_pointer_loc = pointer_loc + event.delta();
 
         if let Some((surface, surface_loc)) = current_contents.focus_under.as_ref() {
             let surface_loc = *surface_loc;
             if let Some(wl_surface) = surface.wl_surface() {
-                let mut pointer_locked = false;
-
                 with_pointer_constraint(&wl_surface, &pointer, |constraint| {
                     let Some(constraint) = constraint else {
                         return;
@@ -771,13 +772,31 @@ impl State {
                             pointer_confined_to =
                                 Some((surface.clone(), surface_loc, confined.region().cloned()));
                         }
-                        PointerConstraint::Locked(_) => {
-                            pointer_locked = true;
+                        PointerConstraint::Locked(locked) => {
+                            let center_in_surface = || {
+                                with_renderer_surface_state(&wl_surface, |state| {
+                                    state.surface_size()
+                                })
+                                .flatten()
+                                .map(|surface_size| {
+                                    // center the pointer as a default when the client doesn't provide a hint
+                                    let center_relative = Point::from((
+                                        surface_size.w as f64 / 2.0,
+                                        surface_size.h as f64 / 2.0,
+                                    ));
+                                    surface_loc + center_relative
+                                })
+                            };
+                            // use the requested cursor position as the locked warp target or default to the center of the surface
+                            let warp_target = locked
+                                .cursor_position_hint()
+                                .map_or_else(center_in_surface, |hint| Some(surface_loc + hint));
+                            pointer_locked_to = Some(warp_target);
                         }
                     }
                 });
 
-                if pointer_locked {
+                if let Some(warp_target) = pointer_locked_to {
                     pointer.relative_motion(
                         self,
                         Some((surface.clone(), surface_loc)),
@@ -790,12 +809,14 @@ impl State {
 
                     pointer.frame(self);
 
-                    return;
+                    if let Some(target) = warp_target {
+                        new_pointer_loc = target;
+                    } else {
+                        return;
+                    }
                 }
             }
         }
-
-        let mut new_pointer_loc = pointer_loc + event.delta();
 
         if self
             .pinnacle
