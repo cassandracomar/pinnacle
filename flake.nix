@@ -80,7 +80,7 @@
             libinput
             mesa
             xwayland
-            libdisplay-info
+            libdisplay-info_0_3
             libgbm
 
             # winit on x11
@@ -104,7 +104,7 @@
               lua5_4
               libinput
               libxkbcommon
-              libdisplay-info
+              libdisplay-info_0_3
               seatd
               libgbm
               udev
