@@ -62,6 +62,8 @@ let
     postConfigure = ''
       substituteInPlace "$rockspecFilename" \
         --replace-fail '"compat53 ~> 0.14"' '"compat53 >= 0.13, < 0.16,"'
+      substituteInPlace "$rockspecFilename" \
+        --replace-fail '"cqueues ~> 20200726"' '"cqueues ~> 20261006"'
     '';
 
     postInstall = ''
