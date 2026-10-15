@@ -64,6 +64,8 @@ let
         --replace-fail '"compat53 ~> 0.14"' '"compat53 >= 0.13, < 0.16,"'
       substituteInPlace "$rockspecFilename" \
         --replace-fail '"cqueues ~> 20200726"' '"cqueues ~> 20261006"'
+      substituteInPlace "$rockspecFilename" \
+        --replace-fail '"luaposix ~> 36.3"' '"luaposix ~> 37.0"'
     '';
 
     postInstall = ''
